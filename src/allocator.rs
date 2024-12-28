@@ -1,12 +1,11 @@
 use alloc::alloc::{GlobalAlloc, Layout};
 use core::ptr::null_mut;
+
 use x86_64::structures::paging::{FrameAllocator, Mapper, Page, PageTableFlags, Size4KiB};
 use x86_64::structures::paging::mapper::MapToError;
 use x86_64::VirtAddr;
-use linked_list_allocator::LockedHeap;
-use crate::allocator::bump::BumpAllocator;
+
 use crate::allocator::fixed_size_block::FixedSizeBlockAllocator;
-use crate::allocator::linked_list::LinkedListAllocator;
 
 #[global_allocator]
 static ALLOCATOR: Locked<FixedSizeBlockAllocator> = Locked::new(FixedSizeBlockAllocator::new());
@@ -78,8 +77,10 @@ fn align_up(addr: usize, align: usize) -> usize {
 pub mod bump {
     use core::alloc::{GlobalAlloc, Layout};
     use core::ptr;
-    use super::align_up;
+
     use crate::allocator::Locked;
+
+    use super::align_up;
 
     pub struct BumpAllocator {
         heap_start: usize,
@@ -133,9 +134,10 @@ pub mod bump {
 }
 
 pub mod linked_list {
-    use core::alloc::{GlobalAlloc, Layout};
-    use super::{align_up, Locked};
     use core::{mem, ptr};
+    use core::alloc::{GlobalAlloc, Layout};
+
+    use super::{align_up, Locked};
 
     struct ListNode {
         size: usize,
@@ -250,8 +252,9 @@ pub mod linked_list {
 
 pub mod fixed_size_block {
     use core::alloc::{GlobalAlloc, Layout};
-    use core::{mem, ptr};
+    use core::ptr;
     use core::ptr::NonNull;
+
     use crate::allocator::Locked;
 
     const BLOCK_SIZES: &[usize] = &[8,16,32, 64, 128, 256, 512, 1024, 2048];

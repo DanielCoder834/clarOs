@@ -12,7 +12,7 @@ use bootloader::{BootInfo, entry_point};
 use x86_64::{VirtAddr, structures::paging::Page};
 use alloc::{vec::Vec, vec, rc::Rc, boxed::Box};
 use blog_os::task::simple_executor::SimpleExecutor;
-use blog_os::task::Task;
+use blog_os::task::{keyboard, Task};
 
 async fn async_number() -> u32 {
     42
@@ -64,6 +64,7 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
 
     let mut executor = SimpleExecutor::new();
     executor.spawn(Task::new(example_task()));
+    executor.spawn(Task::new(keyboard::print_keypresses()));
     executor.run();
 
     #[cfg(test)]

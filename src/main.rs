@@ -13,6 +13,7 @@ use x86_64::{VirtAddr, structures::paging::Page};
 use alloc::{vec::Vec, vec, rc::Rc, boxed::Box};
 use blog_os::task::simple_executor::SimpleExecutor;
 use blog_os::task::{keyboard, Task};
+use blog_os::task::executor::Executor;
 
 async fn async_number() -> u32 {
     42
@@ -62,16 +63,16 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
         .expect("heap initialization failed");
 
 
-    let mut executor = SimpleExecutor::new();
+    let mut executor = Executor::new();
     executor.spawn(Task::new(example_task()));
     executor.spawn(Task::new(keyboard::print_keypresses()));
     executor.run();
 
     #[cfg(test)]
     test_main();
-
-    println!("It did not crash!");
-    blog_os::hlt_loop();
+    //
+    // println!("It did not crash!");
+    // blog_os::hlt_loop();
 }
 
 // This function is called on panic

@@ -13,6 +13,13 @@ impl TaskWaker {
     fn wake_task(&self) {
         self.task_queue.push(self.task_id).expect("task_queue full");
     }
+
+    fn new(task_id: TaskId, task_queue: Arc<ArrayQueue<TaskId>>) -> Waker {
+        Waker::from(Arc::new(TaskWaker {
+            task_id,
+            task_queue,
+        }))
+    }
 }
 
 impl Wake for TaskWaker {
@@ -32,6 +39,12 @@ pub struct Executor {
 }
 
 impl Executor {
+    pub fn run(&mut self) -> ! {
+        loop {
+            self.run_ready_tasks();
+        }
+    }
+
     pub fn new() -> Self {
         Executor {
             tasks: BTreeMap::new(),
@@ -59,7 +72,7 @@ impl Executor {
             let task = match tasks.get_mut(&task_id) {
                 Some(task) => task,
                 None => continue,
-            }
+            };
             let waker = waker_cache
                 .entry(task_id)
                 .or_insert_with(|| TaskWaker::new(task_id, task_queue.clone()));
